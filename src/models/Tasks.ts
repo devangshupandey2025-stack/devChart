@@ -1,21 +1,33 @@
 import mongoose from "mongoose";
 
 const TaskSchema = new mongoose.Schema({
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
+    },
     title: {
         type: String,
         required: true,
     },
     description: {
         type: String,
-        required: true,
+    },
+    status: {
+        type: String,
+        enum: ["TODO", "IN_PROGRESS", "DONE"],
+        default: "TODO",
     },
     priority: {
         type: String,
-        required: true,
+        enum: ["Low", "Medium", "High"],
+        default: "Medium",
     },
-    completed: {
-        type: Boolean,
-        default: false,
+    dueDate: {
+        type: Date,
+    },
+    assignedTo: {
+        type: String, // Selected from hardcoded TEAM_MEMBERS
     },
     createdAt: {
         type: Date,
