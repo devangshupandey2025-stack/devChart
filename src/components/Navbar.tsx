@@ -9,7 +9,17 @@ export default function Navbar() {
       <div className="flex items-center gap-4 text-sm">
         <Link href="/dashboard">
           <button className="rounded-lg py-2 px-4 bg-transparent border border-teal-200 hover:bg-teal-200/10 transition-colors text-teal-200">
-            Dashboard
+            Analytics
+          </button>
+        </Link>
+        <Link href="/projects">
+          <button className="rounded-lg py-2 px-4 bg-transparent border border-teal-200 hover:bg-teal-200/10 transition-colors text-teal-200">
+            Operations
+          </button>
+        </Link>
+        <Link href="/calendar">
+          <button className="rounded-lg py-2 px-4 bg-transparent border border-teal-200 hover:bg-teal-200/10 transition-colors text-teal-200">
+            Planning
           </button>
         </Link>
         <Link href="/create-project">

@@ -20,6 +20,12 @@ export async function PATCH(
         const oldStatus = task.status;
         const oldAssignee = task.assignedTo;
 
+        if (body.status === "DONE" && oldStatus !== "DONE") {
+            body.completedAt = new Date();
+        } else if (body.status && body.status !== "DONE" && oldStatus === "DONE") {
+            body.completedAt = null;
+        }
+
         const updatedTask = await Task.findByIdAndUpdate(resolvedParams.id, body, {
             new: true,
             runValidators: true,

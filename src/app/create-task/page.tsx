@@ -22,10 +22,14 @@ const CreateTask = () => {
     async function fetchProjects() {
       try {
         const res = await fetch("/api/projects");
+        if (!res.ok) {
+          throw new Error("Failed to fetch projects");
+        }
         const data = await res.json();
-        setProjects(data);
-        if (data.length > 0) {
-          setProjectId(data[0]._id);
+        const projectsArray = Array.isArray(data) ? data : [];
+        setProjects(projectsArray);
+        if (projectsArray.length > 0) {
+          setProjectId(projectsArray[0]._id);
         }
       } catch (error) {
         console.error("Failed to fetch projects", error);

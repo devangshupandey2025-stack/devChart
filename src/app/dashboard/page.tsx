@@ -3,7 +3,9 @@ import connectDB from "@/lib/mongodb";
 import StatCard from "@/components/dashboard/StatCard";
 import StatusChart from "@/components/dashboard/StatusChart";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import RecentDeadlines from "@/components/dashboard/RecentDeadlines";
+import UpcomingTimeline from "@/components/dashboard/UpcomingTimeline";
+import HallOfFame from "@/components/dashboard/HallOfFame";
+import Leaderboard from "@/components/dashboard/Leaderboard";
 import { CheckCircle2, ListTodo, Target, Activity } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +29,7 @@ export default async function DashboardPage() {
       <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Analytics Dashboard</h1>
-          <p className="text-gray-500 mt-2">Get a high-level overview of your team's progress.</p>
+          <p className="text-gray-500 mt-2">Get a high-level overview of your team's progress and contributions.</p>
         </div>
 
         {!data ? (
@@ -62,7 +64,17 @@ export default async function DashboardPage() {
               />
             </div>
 
-            {/* Middle Row: Chart & Deadlines */}
+            {/* Second Row: Hall of Fame & Leaderboard */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <HallOfFame contributor={data.hallOfFame} />
+              </div>
+              <div className="lg:col-span-2">
+                <Leaderboard leaderboard={data.leaderboard} />
+              </div>
+            </div>
+
+            {/* Third Row: Chart & Deadlines */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                 <h3 className="text-lg font-bold text-gray-800 mb-6">Task Distribution</h3>
@@ -71,7 +83,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               <div className="lg:col-span-1">
-                <RecentDeadlines tasks={data.upcomingTasks} />
+                <UpcomingTimeline items={data.upcomingTimeline} />
               </div>
             </div>
 

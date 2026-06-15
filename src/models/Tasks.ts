@@ -29,6 +29,9 @@ const TaskSchema = new mongoose.Schema({
     assignedTo: {
         type: String, // Selected from hardcoded TEAM_MEMBERS
     },
+    completedAt: {
+        type: Date,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

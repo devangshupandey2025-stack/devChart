@@ -3,6 +3,20 @@ import Task from "@/models/Tasks";
 import Activity from "@/models/Activity";
 import { NextResponse } from "next/server";
 
+export async function GET() {
+    try {
+        await connectDB();
+        const tasks = await Task.find().sort({ createdAt: -1 });
+        return NextResponse.json(tasks);
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+        return NextResponse.json(
+            { message: "Failed to fetch tasks" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function POST(request: Request) {
     try {
         await connectDB();
