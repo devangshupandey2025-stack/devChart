@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Plus, X, Trash2, Calendar as CalendarIcon, Clock, Target, AlertCircle } from "lucide-react";
+import { Plus, X, Trash2, Calendar as CalendarIcon, Clock, Target, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 type CalendarCategory = "MEETING" | "EVENT" | "MILESTONE" | "DEADLINE";
 
@@ -24,6 +24,9 @@ export default function CalendarView() {
   const [projectsData, setProjectsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const calendarRef = React.useRef<FullCalendar>(null);
+  const [currentTitle, setCurrentTitle] = useState("");
+  const [currentView, setCurrentView] = useState("dayGridMonth");
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-w: 768px)");
@@ -240,53 +243,137 @@ export default function CalendarView() {
     <div className="flex flex-col md:flex-row w-full h-full min-h-[600px]">
       
       {/* LEFT: FullCalendar */}
-      <div className="flex-1 p-6 border-r border-gray-100 flex flex-col relative h-[80vh] overflow-auto">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-4 text-xs font-medium text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
+      <div className="flex-1 p-4 md:p-6 border-r border-gray-100 flex flex-col relative h-[80vh] overflow-auto hide-scrollbar">
+        
+        {/* Top Legend (Scrollable on mobile) */}
+        <div className="flex justify-start md:justify-end mb-4 overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-4 text-xs font-medium text-gray-600 bg-gray-50 px-4 py-2 rounded-lg whitespace-nowrap">
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Deadlines</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500"></span> Meetings</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Events</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#5B5FC7]"></span> Events</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Milestones</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> Overdue</span>
           </div>
         </div>
 
-        <div className="flex-1 calendar-container">
+        {/* CUSTOM MS TEAMS STYLE CALENDAR HEADER */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          {/* Mobile specific layout */}
+          <div className="flex w-full justify-between items-center md:hidden">
+            <div className="flex flex-col gap-2">
+              <div className="flex border border-gray-200 rounded-lg overflow-hidden w-fit shadow-sm">
+                <button onClick={() => calendarRef.current?.getApi().prev()} className="px-3 py-1.5 bg-white hover:bg-gray-50 border-r border-gray-200 text-gray-700 transition-colors">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button onClick={() => calendarRef.current?.getApi().next()} className="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+              <button onClick={() => calendarRef.current?.getApi().today()} className="px-4 py-1 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 shadow-sm w-fit transition-colors">
+                Today
+              </button>
+            </div>
+
+            <div className="text-center font-extrabold text-[#111827] flex flex-col items-center justify-center">
+              {currentTitle.split(' ').length === 2 ? (
+                <>
+                  <span className="text-[22px] leading-tight">{currentTitle.split(' ')[0]}</span>
+                  <span className="text-[22px] leading-tight">{currentTitle.split(' ')[1]}</span>
+                </>
+              ) : (
+                <span className="text-xl leading-tight max-w-[120px] text-center">{currentTitle}</span>
+              )}
+            </div>
+
+            <div>
+              <button 
+                onClick={() => {
+                   const api = calendarRef.current?.getApi();
+                   const newView = currentView === 'dayGridMonth' ? 'dayGridWeek' : 'dayGridMonth';
+                   api?.changeView(newView);
+                   setCurrentView(newView);
+                }}
+                className="px-4 py-2.5 bg-[#E5E7EB] text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors border border-gray-200"
+              >
+                {currentView === 'dayGridMonth' ? 'Month' : 'Week'}
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop specific layout */}
+          <div className="hidden md:flex items-center gap-4 w-full">
+            <div className="flex items-center gap-2">
+              <button onClick={() => calendarRef.current?.getApi().today()} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+                Today
+              </button>
+              <div className="flex border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                <button onClick={() => calendarRef.current?.getApi().prev()} className="px-2 py-2 bg-white hover:bg-gray-50 border-r border-gray-200 text-gray-600 transition-colors">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button onClick={() => calendarRef.current?.getApi().next()} className="px-2 py-2 bg-white hover:bg-gray-50 text-gray-600 transition-colors">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 ml-4">{currentTitle}</h2>
+            </div>
+            
+            <div className="ml-auto flex items-center gap-3">
+              <select 
+                value={currentView}
+                onChange={(e) => {
+                  calendarRef.current?.getApi().changeView(e.target.value);
+                  setCurrentView(e.target.value);
+                }}
+                className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-[#5B5FC7] focus:border-[#5B5FC7] block p-2 shadow-sm font-medium outline-none cursor-pointer"
+              >
+                <option value="dayGridMonth">Month</option>
+                <option value="dayGridWeek">Week</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full calendar-container mt-2">
           <FullCalendar
+            ref={calendarRef}
             key={isMobile ? 'mobile' : 'desktop'}
             plugins={[dayGridPlugin, interactionPlugin]}
-            initialView={isMobile ? "dayGridWeek" : "dayGridMonth"}
+            initialView={currentView}
             events={calendarEvents}
             eventClick={(info) => {
               setSelectedEvent(info.event.extendedProps as NormalizedEvent);
             }}
-            height="100%"
-            headerToolbar={isMobile ? {
-              left: 'prev,next',
-              center: 'title',
-              right: 'today'
-            } : {
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth'
-            }}
-            buttonText={{
-              today: 'Today',
-              month: 'Month'
-            }}
+            datesSet={(arg) => setCurrentTitle(arg.view.title)}
+            height="auto"
+            headerToolbar={false}
           />
         </div>
+
+        {/* MS Teams Style Mobile Quick Event Button */}
+        {isMobile && !showQuickAdd && (
+          <div className="mt-4 pb-4">
+            <button 
+              onClick={() => {
+                setShowQuickAdd(true);
+                setTimeout(() => document.getElementById('quick-add-panel')?.scrollIntoView({ behavior: 'smooth' }), 100);
+              }}
+              className="w-full py-3.5 bg-[#5B5FC7] text-white rounded-[10px] font-bold text-[15px] flex items-center justify-center gap-2 shadow-md shadow-[#5B5FC7]/30 active:scale-[0.98] transition-all"
+            >
+              <Plus className="w-5 h-5" /> Quick Event
+            </button>
+          </div>
+        )}
       </div>
 
       {/* RIGHT: Agenda Panel */}
-      <div className="w-full md:w-80 lg:w-96 bg-gray-50/50 flex flex-col border-l border-gray-100 h-[80vh] overflow-hidden">
+      <div className="w-full md:w-80 lg:w-96 bg-gray-50/50 flex flex-col border-l border-gray-100 h-[80vh] overflow-hidden" id="quick-add-panel">
         <div className="p-4 bg-white border-b border-gray-100 flex-shrink-0">
           {!showQuickAdd ? (
             <button 
               onClick={() => setShowQuickAdd(true)}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
+              className={`${isMobile ? 'hidden' : 'flex'} w-full py-2.5 bg-[#5B5FC7] hover:bg-[#4d51a8] text-white rounded-lg font-medium text-sm items-center justify-center gap-2 transition-colors shadow-sm`}
             >
-              <Plus className="w-4 h-4" /> Quick Event
+              <Plus className="w-4 h-4" /> New Event
             </button>
           ) : (
             <form onSubmit={handleQuickAdd} className="bg-gray-50 p-3 rounded-xl border border-gray-200">
@@ -454,11 +541,11 @@ export default function CalendarView() {
           --fc-today-bg-color: #f0fdf4;
         }
         .calendar-container .fc-theme-standard th {
-          padding: 8px 0;
-          font-size: 12px;
+          padding: 12px 0;
+          font-size: 13px;
           text-transform: uppercase;
-          font-weight: 800;
-          color: #6b7280;
+          font-weight: 900;
+          color: #4B5563;
         }
         .calendar-container .fc-daygrid-day-number {
           font-size: 14px;
@@ -503,9 +590,18 @@ export default function CalendarView() {
             padding: 4px !important;
           }
           .calendar-container .fc-theme-standard th {
-            padding: 4px 0 !important;
-            font-size: 10px !important;
+            padding: 10px 0 !important;
+            font-size: 12px !important;
+            color: #6B7280;
           }
+        }
+        /* Hide scrollbar utility */
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}} />
     </div>
