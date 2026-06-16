@@ -99,6 +99,17 @@ export async function POST(
                 action: `completed task ${task.title}`,
                 xpAwarded
             });
+            
+            if (oldProgress < 100) {
+                activitiesToCreate.push({
+                    taskId: resolvedParams.id,
+                    projectId: task.projectId,
+                    type: "MILESTONE_REACHED",
+                    taskTitle: task.title,
+                    assignedTo: author,
+                    action: `reached 100% progress`
+                });
+            }
         } else {
              // Milestones
              const milestones = [25, 50, 75];

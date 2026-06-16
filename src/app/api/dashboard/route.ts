@@ -2,6 +2,7 @@ import connectDB from "@/lib/mongodb";
 import Task from "@/models/Tasks";
 import Activity from "@/models/Activity";
 import Event from "@/models/Event";
+import TaskUpdate from "@/models/TaskUpdate";
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
@@ -133,10 +134,6 @@ export async function GET() {
         }).sort({ updatedAt: 1 }).limit(5).lean();
 
         // Execution velocity (TaskUpdates today vs yesterday)
-        // Ensure TaskUpdate is imported!
-        const mongoose = require("mongoose");
-        const TaskUpdate = mongoose.models.TaskUpdate;
-        
         let executionVelocity = { updatesToday: 0, percentChange: 0 };
         
         if (TaskUpdate) {
@@ -163,6 +160,63 @@ export async function GET() {
             };
         }
 
+        // --- Automation Engine Data ---
+        const fortyEightHoursFromNow = new Date();
+        fortyEightHoursFromNow.setHours(fortyEightHoursFromNow.getHours() + 48);
+        const twentyFourHoursFromNow = new Date();
+        twentyFourHoursFromNow.setHours(twentyFourHoursFromNow.getHours() + 24);
+
+        // 1. Risk Tasks
+        const rawRiskTasks = await Task.find({
+            status: { $ne: "DONE" },
+            currentProgress: { $ne: 100 },
+            dueDate: { $lte: fortyEightHoursFromNow },
+        }).lean();
+
+        const riskTasks = rawRiskTasks.filter(t => (t.currentProgress || 0) < 70).map(t => {
+            let severity = "medium";
+            if (t.dueDate <= twentyFourHoursFromNow && (t.currentProgress || 0) < 30) {
+                severity = "high";
+            }
+            return {
+                id: t._id.toString(),
+                title: t.title,
+                dueDate: t.dueDate,
+                progress: t.currentProgress || 0,
+                severity
+            };
+        });
+
+        // 2. Stale Tasks
+        const inProgressTasksRaw = await Task.find({ status: "IN_PROGRESS" }).lean();
+        const staleTasks = [];
+        for (const t of inProgressTasksRaw) {
+            const lastUpdate = await TaskUpdate.findOne({ taskId: t._id }).sort({ createdAt: -1 }).lean();
+            const lastDate = lastUpdate ? new Date(lastUpdate.createdAt) : new Date(t.createdAt);
+            
+            if (lastDate < sevenDaysAgo) {
+                const diffTime = Math.abs(new Date().getTime() - lastDate.getTime());
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                staleTasks.push({
+                    id: t._id.toString(),
+                    title: t.title,
+                    lastUpdateDate: lastDate,
+                    daysStale: diffDays,
+                    severity: "low"
+                });
+            }
+        }
+        
+        // Sort stale tasks by daysStale descending
+        staleTasks.sort((a, b) => b.daysStale - a.daysStale);
+
+        // 3. Achieved Milestones (Last 7 Days)
+        const achievedMilestonesLast7Days = await Activity.find({
+            type: "MILESTONE_REACHED",
+            action: "reached 100% progress",
+            createdAt: { $gte: sevenDaysAgo }
+        }).sort({ createdAt: -1 }).lean();
+
         return NextResponse.json({
             stats,
             todayStats,
@@ -173,7 +227,12 @@ export async function GET() {
             hallOfFame,
             mostActiveTasks,
             tasksNeedingAttention,
-            executionVelocity
+            executionVelocity,
+            automation: {
+                staleTasks,
+                riskTasks,
+                achievedMilestones: achievedMilestonesLast7Days
+            }
         });
     } catch (error) {
         console.error("Error fetching dashboard data:", error);

@@ -8,6 +8,7 @@ import HallOfFame from "@/components/dashboard/HallOfFame";
 import Leaderboard from "@/components/dashboard/Leaderboard";
 import MostActiveTasks from "@/components/dashboard/MostActiveTasks";
 import TasksNeedingAttention from "@/components/dashboard/TasksNeedingAttention";
+import AutomationCenter from "@/components/dashboard/AutomationCenter";
 import { CheckCircle2, ListTodo, Target, Activity, Flag, Sparkles, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -95,7 +96,18 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            {/* Fourth Row: Active & Stale Tasks */}
+            {/* Fourth Row: Automation Center */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-3">
+                <AutomationCenter 
+                  staleTasks={data.automation?.staleTasks || []}
+                  riskTasks={data.automation?.riskTasks || []}
+                  achievedMilestones={data.automation?.achievedMilestones || []}
+                />
+              </div>
+            </div>
+
+            {/* Fifth Row: Active & Stale Tasks */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <MostActiveTasks tasks={data.mostActiveTasks || []} />
               <TasksNeedingAttention tasks={data.tasksNeedingAttention || []} />
