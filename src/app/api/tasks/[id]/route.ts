@@ -44,6 +44,10 @@ export async function PATCH(
             runValidators: true,
         });
 
+        if (!updatedTask) {
+            return NextResponse.json({ message: "Task not found" }, { status: 404 });
+        }
+
         // Generate activity logs based on what changed
         if (body.status && body.status !== oldStatus) {
             if (body.status === "DONE") {

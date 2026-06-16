@@ -173,15 +173,15 @@ export async function GET() {
             dueDate: { $lte: fortyEightHoursFromNow },
         }).lean();
 
-        const riskTasks = rawRiskTasks.filter(t => (t.currentProgress || 0) < 70).map(t => {
+        const riskTasks = rawRiskTasks.filter(t => t.dueDate && (t.currentProgress || 0) < 70).map(t => {
             let severity = "medium";
-            if (t.dueDate <= twentyFourHoursFromNow && (t.currentProgress || 0) < 30) {
+            if (new Date(t.dueDate!) <= twentyFourHoursFromNow && (t.currentProgress || 0) < 30) {
                 severity = "high";
             }
             return {
                 id: t._id.toString(),
                 title: t.title,
-                dueDate: t.dueDate,
+                dueDate: t.dueDate!,
                 progress: t.currentProgress || 0,
                 severity
             };

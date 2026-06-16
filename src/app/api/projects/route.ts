@@ -64,7 +64,7 @@ export async function GET() {
             }
 
             const upcomingTimeline = [
-                ...upcomingTasks.map(t => ({ title: t.title, date: new Date(t.dueDate) })),
+                ...upcomingTasks.map(t => ({ title: t.title, date: new Date(t.dueDate!) })),
                 ...upcomingEvents.map(e => ({ title: e.title, date: new Date(e.startDate) }))
             ].sort((a, b) => a.date.getTime() - b.date.getTime());
 

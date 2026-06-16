@@ -12,6 +12,7 @@ export interface Activity {
   assignedTo?: string;
   xpAwarded?: number;
   action?: string;
+  updatePreview?: string;
   createdAt: string;
 }
 
