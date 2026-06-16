@@ -40,6 +40,8 @@ const CreateTask = () => {
     fetchProjects();
   }, []);
 
+  const todayStr = new Date().toISOString().split("T")[0];
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
@@ -184,6 +186,7 @@ const CreateTask = () => {
                 </label>
                 <input
                   type="date"
+                  min={todayStr}
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"

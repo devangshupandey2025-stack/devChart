@@ -8,6 +8,9 @@ const ProjectSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    templateId: {
+        type: String,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

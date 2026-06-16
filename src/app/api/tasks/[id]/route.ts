@@ -17,6 +17,19 @@ export async function PATCH(
             return NextResponse.json({ message: "Task not found" }, { status: 404 });
         }
 
+        if (body.dueDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const inputDate = new Date(body.dueDate);
+            inputDate.setHours(0, 0, 0, 0);
+            if (inputDate < today) {
+                return NextResponse.json(
+                    { message: "Due date cannot be in the past" },
+                    { status: 400 }
+                );
+            }
+        }
+
         const oldStatus = task.status;
         const oldAssignee = task.assignedTo;
 

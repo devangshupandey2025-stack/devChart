@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
-import { CalendarClock, FolderKanban, Activity } from "lucide-react";
+import { CalendarClock, FolderKanban, Activity, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { PROJECT_TEMPLATES } from "@/lib/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -41,15 +42,34 @@ export default async function ProjectsDashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project: any) => {
-              const { stats } = project;
+              const { stats, templateId } = project;
               const isHealthy = stats.healthScore >= 80;
               const isAtRisk = stats.healthScore >= 50 && stats.healthScore < 80;
+              const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
+
+              const categoryColors: Record<string, string> = {
+                EVENT: "bg-purple-50 text-purple-700 border-purple-200",
+                HR: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                PROJECT: "bg-blue-50 text-blue-700 border-blue-200",
+                TEAM: "bg-orange-50 text-orange-700 border-orange-200",
+              };
 
               return (
                 <div key={project._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col overflow-hidden">
                   <div className="p-6 flex-1">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{project.name}</h3>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{project.name}</h3>
+                        {template && (
+                          <div className="mt-1 flex items-center gap-1">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">Generated From:</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${categoryColors[template.category] || "bg-gray-50 text-gray-700 border-gray-200"}`}>
+                              {template.category === "EVENT" ? "🚀 " : template.category === "HR" ? "👥 " : template.category === "PROJECT" ? "💻 " : "🏆 "}
+                              {template.name} Blueprint
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       <div className={`px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 whitespace-nowrap
                         ${isHealthy ? "bg-emerald-50 text-emerald-700 border-emerald-100" : 
                           isAtRisk ? "bg-yellow-50 text-yellow-700 border-yellow-100" : 

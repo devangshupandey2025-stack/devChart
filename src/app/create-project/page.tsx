@@ -3,12 +3,18 @@
 import Navbar from "@/components/Navbar";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import TemplateSelector from "@/components/projects/TemplateSelector";
+import TemplatePreview from "@/components/projects/TemplatePreview";
+import { PROJECT_TEMPLATES } from "@/lib/templates";
 
 const CreateProject = () => {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("custom");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const selectedTemplate = PROJECT_TEMPLATES.find(t => t.id === selectedTemplateId) || null;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -18,7 +24,7 @@ const CreateProject = () => {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name, description, templateId: selectedTemplateId }),
       });
 
       if (!response.ok) throw new Error("Failed to create project");
@@ -35,50 +41,66 @@ const CreateProject = () => {
   return (
     <div className="min-h-screen bg-orange-100/50">
       <Navbar />
-      <div className="max-w-xl mx-auto py-10 px-4">
+      <div className="max-w-6xl mx-auto py-10 px-4">
         <h1 className="text-4xl font-bold mb-8 text-teal-600">
           Create a New Project
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-6 bg-white p-8 rounded-2xl shadow-sm border border-gray-100"
-        >
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Project Name
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Q3 Marketing Launch"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Description (Optional)
-            </label>
-            <textarea
-              placeholder="What is this project about?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full p-4 mt-2 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-6 bg-white p-8 rounded-2xl shadow-sm border border-gray-100"
           >
-            {isSubmitting ? "Creating..." : "Create Project"}
-          </button>
-        </form>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Project Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Q3 Marketing Launch"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Description (Optional)
+              </label>
+              <textarea
+                placeholder="What is this project about?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+              ></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Select Blueprint
+              </label>
+              <TemplateSelector 
+                selectedTemplateId={selectedTemplateId} 
+                onSelect={setSelectedTemplateId} 
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full p-4 mt-2 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? "Creating..." : "Create Project"}
+            </button>
+          </form>
+
+          <div className="lg:sticky lg:top-8 h-[calc(100vh-8rem)]">
+            <TemplatePreview template={selectedTemplate} />
+          </div>
+        </div>
       </div>
     </div>
   );

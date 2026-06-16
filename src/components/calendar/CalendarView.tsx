@@ -20,6 +20,7 @@ interface NormalizedEvent {
 
 export default function CalendarView() {
   const [eventsData, setEventsData] = useState<NormalizedEvent[]>([]);
+  const [projectsData, setProjectsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modals state
@@ -29,18 +30,26 @@ export default function CalendarView() {
   // Quick Add Form
   const [quickAddTitle, setQuickAddTitle] = useState("");
   const [quickAddDate, setQuickAddDate] = useState("");
+  const [quickAddType, setQuickAddType] = useState("EVENT");
+  const [quickAddProjectId, setQuickAddProjectId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCalendarData = async () => {
     try {
       setLoading(true);
-      const [eventsRes, tasksRes] = await Promise.all([
+      const [eventsRes, tasksRes, projectsRes] = await Promise.all([
         fetch("/api/events"),
         fetch("/api/tasks"),
+        fetch("/api/projects"),
       ]);
 
       const events = await eventsRes.json();
       const tasks = await tasksRes.json();
+      const projects = await projectsRes.json();
+      
+      if (Array.isArray(projects)) {
+        setProjectsData(projects);
+      }
 
       const normalized: NormalizedEvent[] = [];
       const now = new Date();
@@ -92,21 +101,44 @@ export default function CalendarView() {
     e.preventDefault();
     if (!quickAddTitle || !quickAddDate) return;
 
+    if (quickAddType === "TASK" && !quickAddProjectId) {
+      alert("Please select a project to create a task.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: quickAddTitle,
-          startDate: new Date(quickAddDate).toISOString(),
-          type: "EVENT",
-        }),
-      });
+
+      let res;
+      if (quickAddType === "TASK") {
+        res = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: quickAddTitle,
+            dueDate: new Date(quickAddDate).toISOString(),
+            projectId: quickAddProjectId,
+            priority: "Medium"
+          }),
+        });
+      } else {
+        res = await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: quickAddTitle,
+            startDate: new Date(quickAddDate).toISOString(),
+            type: quickAddType,
+          }),
+        });
+      }
+
       if (res.ok) {
         setShowQuickAdd(false);
         setQuickAddTitle("");
         setQuickAddDate("");
+        setQuickAddType("EVENT");
+        setQuickAddProjectId("");
         fetchCalendarData();
       }
     } catch (error) {
@@ -243,9 +275,33 @@ export default function CalendarView() {
                 <h4 className="text-sm font-bold text-gray-700">Quick Add Event</h4>
                 <button type="button" onClick={() => setShowQuickAdd(false)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
               </div>
+              <select
+                value={quickAddType}
+                onChange={e => setQuickAddType(e.target.value)}
+                className="w-full mb-2 px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              >
+                <option value="EVENT">Event</option>
+                <option value="MILESTONE">Milestone</option>
+                <option value="MEETING">Meeting</option>
+                <option value="TASK">Task Deadline</option>
+              </select>
+              
+              {quickAddType === "TASK" && (
+                <select
+                  value={quickAddProjectId}
+                  onChange={e => setQuickAddProjectId(e.target.value)}
+                  className="w-full mb-2 px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                >
+                  <option value="">Select a Project...</option>
+                  {projectsData.map(p => (
+                    <option key={p._id} value={p._id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+
               <input 
                 type="text" 
-                placeholder="Event Title..." 
+                placeholder={quickAddType === "TASK" ? "Task Title..." : "Event Title..."} 
                 value={quickAddTitle}
                 onChange={e => setQuickAddTitle(e.target.value)}
                 className="w-full mb-2 px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -254,6 +310,7 @@ export default function CalendarView() {
               <input 
                 type="date" 
                 value={quickAddDate}
+                min={new Date().toISOString().split("T")[0]}
                 onChange={e => setQuickAddDate(e.target.value)}
                 className="w-full mb-3 px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />

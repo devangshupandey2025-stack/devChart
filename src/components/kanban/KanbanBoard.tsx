@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { TaskType, TaskStatus } from "@/types";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { TEAM_MEMBERS } from "@/lib/constants";
 import {
   DndContext,
@@ -34,6 +34,7 @@ const COLUMNS: { id: TaskStatus; title: string }[] = [
 export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskType | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -142,6 +143,45 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
     }
   };
 
+  const handleEditTaskSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingTask) return;
+
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const priority = formData.get("priority") as string;
+    const assignedTo = formData.get("assignedTo") as string;
+    const dueDate = formData.get("dueDate") as string;
+
+    try {
+      const response = await fetch(`/api/tasks/${editingTask._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          priority,
+          assignedTo: assignedTo || undefined,
+          dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update task");
+      }
+
+      const updatedTask = await response.json();
+      setTasks(tasks.map(t => t._id === updatedTask._id ? updatedTask : t));
+      setEditingTask(null);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update task.");
+    }
+  };
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
   return (
     <DndContext
       sensors={sensors}
@@ -204,6 +244,7 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
               id={col.id}
               title={col.title}
               tasks={filteredTasks.filter((task) => task.status === col.id)}
+              onEdit={setEditingTask}
             />
           ))}
         </div>
@@ -212,6 +253,83 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
       <DragOverlay>
         {activeTask ? <TaskCard task={activeTask} /> : null}
       </DragOverlay>
+
+      {editingTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Edit Task</h2>
+              <button onClick={() => setEditingTask(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditTaskSubmit} className="p-5 overflow-y-auto flex-1 flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+                <input
+                  name="title"
+                  type="text"
+                  defaultValue={editingTask.title}
+                  required
+                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  defaultValue={editingTask.description}
+                  rows={3}
+                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Priority</label>
+                  <select
+                    name="priority"
+                    defaultValue={editingTask.priority}
+                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Assignee</label>
+                  <select
+                    name="assignedTo"
+                    defaultValue={editingTask.assignedTo || ""}
+                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                  >
+                    <option value="">Unassigned</option>
+                    {TEAM_MEMBERS.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Due Date</label>
+                <input
+                  name="dueDate"
+                  type="date"
+                  min={todayStr}
+                  defaultValue={editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : ""}
+                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 mt-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </DndContext>
   );
 }

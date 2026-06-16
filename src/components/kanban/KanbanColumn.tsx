@@ -8,9 +8,10 @@ interface KanbanColumnProps {
   id: TaskStatus;
   title: string;
   tasks: TaskType[];
+  onEdit?: (task: TaskType) => void;
 }
 
-export default function KanbanColumn({ id, title, tasks }: KanbanColumnProps) {
+export default function KanbanColumn({ id, title, tasks, onEdit }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
     data: {
@@ -40,13 +41,13 @@ export default function KanbanColumn({ id, title, tasks }: KanbanColumnProps) {
         >
           {tasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full min-h-[150px] border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-              <span className="text-2xl mb-2">🎯</span>
+              <span className="text-2xl mb-2"></span>
               <p className="text-sm font-medium text-gray-500">No tasks here</p>
               <p className="text-xs text-gray-400 mt-1 text-center px-4">Drag tasks here to update their status</p>
             </div>
           ) : (
             tasks.map((task) => (
-              <TaskCard key={task._id} task={task} />
+              <TaskCard key={task._id} task={task} onEdit={onEdit} />
             ))
           )}
         </SortableContext>
