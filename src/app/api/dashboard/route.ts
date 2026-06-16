@@ -115,6 +115,54 @@ export async function GET() {
         const leaderboard = Object.values(memberStats).sort((a, b) => b.totalXP - a.totalXP);
         const hallOfFame = leaderboard.length > 0 ? leaderboard[0] : null;
 
+        // Dashboard enhancements: Most Active Tasks, Tasks Needing Attention, Execution Velocity
+        const mostActiveTasks = await Task.find({ updateCount: { $gt: 0 } })
+            .sort({ updateCount: -1 })
+            .limit(5)
+            .lean();
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const tasksNeedingAttention = await Task.find({
+            status: { $ne: "DONE" },
+            $or: [
+                { updatedAt: { $lt: sevenDaysAgo } },
+                { updatedAt: { $exists: false }, createdAt: { $lt: sevenDaysAgo } }
+            ]
+        }).sort({ updatedAt: 1 }).limit(5).lean();
+
+        // Execution velocity (TaskUpdates today vs yesterday)
+        // Ensure TaskUpdate is imported!
+        const mongoose = require("mongoose");
+        const TaskUpdate = mongoose.models.TaskUpdate;
+        
+        let executionVelocity = { updatesToday: 0, percentChange: 0 };
+        
+        if (TaskUpdate) {
+            const startOfYesterdayLocal = new Date();
+            startOfYesterdayLocal.setDate(startOfYesterdayLocal.getDate() - 1);
+            startOfYesterdayLocal.setHours(0, 0, 0, 0);
+
+            const startOfTodayLocal = new Date();
+            startOfTodayLocal.setHours(0, 0, 0, 0);
+
+            const updatesTodayCount = await TaskUpdate.countDocuments({ createdAt: { $gte: startOfTodayLocal } });
+            const updatesYesterdayCount = await TaskUpdate.countDocuments({ createdAt: { $gte: startOfYesterdayLocal, $lt: startOfTodayLocal } });
+
+            let executionVelocityPercent = 0;
+            if (updatesYesterdayCount > 0) {
+                executionVelocityPercent = Math.round(((updatesTodayCount - updatesYesterdayCount) / updatesYesterdayCount) * 100);
+            } else if (updatesTodayCount > 0) {
+                executionVelocityPercent = 100;
+            }
+
+            executionVelocity = {
+                updatesToday: updatesTodayCount,
+                percentChange: executionVelocityPercent
+            };
+        }
+
         return NextResponse.json({
             stats,
             todayStats,
@@ -122,7 +170,10 @@ export async function GET() {
             upcomingTimeline,
             activities,
             leaderboard,
-            hallOfFame
+            hallOfFame,
+            mostActiveTasks,
+            tasksNeedingAttention,
+            executionVelocity
         });
     } catch (error) {
         console.error("Error fetching dashboard data:", error);

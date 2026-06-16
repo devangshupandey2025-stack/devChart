@@ -10,6 +10,10 @@ export interface TaskType {
   priority: TaskPriority;
   dueDate?: string;
   assignedTo?: string;
+  currentProgress?: number;
+  updateCount?: number;
+  latestUpdatePreview?: string;
+  updatedAt?: string;
   createdAt: string;
 }
 

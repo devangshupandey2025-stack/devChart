@@ -17,7 +17,14 @@ export async function GET() {
             const totalTasks = tasks.length;
             const completedTasks = tasks.filter(t => t.status === "DONE").length;
             
-            const completionPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+            const completedTasksPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+            
+            let totalProgress = 0;
+            tasks.forEach(t => {
+                if (t.status === "DONE") totalProgress += 100;
+                else totalProgress += (t.currentProgress || 0);
+            });
+            const completionPercentage = totalTasks === 0 ? 0 : Math.round(totalProgress / totalTasks);
             
             let onTimeTasks = 0;
             tasks.forEach(t => {
@@ -37,7 +44,7 @@ export async function GET() {
             });
 
             const onTimeRate = totalTasks === 0 ? 100 : Math.round((onTimeTasks / totalTasks) * 100);
-            const healthScore = totalTasks === 0 ? 100 : Math.round((completionPercentage * 0.7) + (onTimeRate * 0.3));
+            const healthScore = totalTasks === 0 ? 100 : Math.round((completedTasksPercentage * 0.5) + (completionPercentage * 0.2) + (onTimeRate * 0.3));
             
             let healthStatus = "🟢 Healthy";
             if (healthScore < 50) healthStatus = "🔴 Delayed";

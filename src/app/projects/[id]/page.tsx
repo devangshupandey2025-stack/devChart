@@ -47,6 +47,10 @@ export default async function ProjectPage({
     priority: t.priority,
     dueDate: t.dueDate ? t.dueDate.toISOString() : undefined,
     assignedTo: t.assignedTo,
+    currentProgress: t.currentProgress || 0,
+    updateCount: t.updateCount || 0,
+    latestUpdatePreview: t.latestUpdatePreview,
+    updatedAt: t.updatedAt ? t.updatedAt.toISOString() : undefined,
     createdAt: t.createdAt.toISOString(),
   }));
 
@@ -76,8 +80,12 @@ export default async function ProjectPage({
   }));
 
   const totalTasks = tasksRaw.length;
-  const completedTasks = tasksRaw.filter(t => t.status === "DONE").length;
-  const completionPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  let totalProgress = 0;
+  tasksRaw.forEach(t => {
+      if (t.status === "DONE") totalProgress += 100;
+      else totalProgress += (t.currentProgress || 0);
+  });
+  const completionPercentage = totalTasks === 0 ? 0 : Math.round(totalProgress / totalTasks);
   
   const today = new Date();
   today.setHours(0,0,0,0);

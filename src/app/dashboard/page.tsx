@@ -6,7 +6,9 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import UpcomingTimeline from "@/components/dashboard/UpcomingTimeline";
 import HallOfFame from "@/components/dashboard/HallOfFame";
 import Leaderboard from "@/components/dashboard/Leaderboard";
-import { CheckCircle2, ListTodo, Target, Activity, Flag, Sparkles } from "lucide-react";
+import MostActiveTasks from "@/components/dashboard/MostActiveTasks";
+import TasksNeedingAttention from "@/components/dashboard/TasksNeedingAttention";
+import { CheckCircle2, ListTodo, Target, Activity, Flag, Sparkles, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +42,7 @@ export default async function DashboardPage() {
           <div className="space-y-6">
             
             {/* Top Row: Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
               <StatCard 
                 title="Total Tasks" 
                 value={data.stats.totalTasks} 
@@ -61,6 +63,12 @@ export default async function DashboardPage() {
                 title="Pending" 
                 value={data.stats.pendingTasks} 
                 icon={<ListTodo className="w-5 h-5" />} 
+              />
+              <StatCard 
+                title="Velocity" 
+                value={data.executionVelocity?.updatesToday || 0} 
+                icon={<TrendingUp className="w-5 h-5" />} 
+                trend={`${data.executionVelocity?.percentChange > 0 ? '+' : ''}${data.executionVelocity?.percentChange || 0}%`}
               />
             </div>
 
@@ -85,6 +93,12 @@ export default async function DashboardPage() {
               <div className="lg:col-span-1">
                 <UpcomingTimeline items={data.upcomingTimeline} />
               </div>
+            </div>
+
+            {/* Fourth Row: Active & Stale Tasks */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <MostActiveTasks tasks={data.mostActiveTasks || []} />
+              <TasksNeedingAttention tasks={data.tasksNeedingAttention || []} />
             </div>
 
             {/* Bottom Row: Activity Feed & Today's Stats */}

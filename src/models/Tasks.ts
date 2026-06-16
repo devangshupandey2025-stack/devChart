@@ -32,12 +32,31 @@ const TaskSchema = new mongoose.Schema({
     completedAt: {
         type: Date,
     },
+    currentProgress: {
+        type: Number,
+        default: 0,
+    },
+    updateCount: {
+        type: Number,
+        default: 0,
+    },
+    latestUpdatePreview: {
+        type: String,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
-const Task = mongoose.models.Task || mongoose.model("Task", TaskSchema);
+if (mongoose.models.Task) {
+  delete mongoose.models.Task;
+}
+
+const Task = mongoose.model("Task", TaskSchema);
 
 export default Task;

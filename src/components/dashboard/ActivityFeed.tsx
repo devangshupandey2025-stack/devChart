@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { Plus, CheckCircle2, User, Rocket, Calendar, Flag, Sparkles, Activity as ActivityIcon } from "lucide-react";
+import { Plus, CheckCircle2, User, Rocket, Calendar, Flag, Sparkles, Activity as ActivityIcon, Edit3 } from "lucide-react";
 
 export interface Activity {
   _id: string;
@@ -36,10 +36,26 @@ function getActivityContent(activity: Activity) {
     return { icon: <Calendar className="w-3.5 h-3.5 text-orange-500" />, text: <span>Created event <span className="font-medium text-gray-900">{activity.eventTitle}</span></span> };
   }
   if (activity.type === "MILESTONE_CREATED" || activity.type === "MILESTONE_REACHED") {
+    if (activity.taskTitle) {
+        return { icon: <Flag className="w-3.5 h-3.5 text-amber-500" />, text: <span>🏁 <span className="font-medium text-gray-900">{activity.taskTitle}</span> {activity.action}</span> };
+    }
     return { icon: <Flag className="w-3.5 h-3.5 text-red-500" />, text: <span>{activity.type === "MILESTONE_CREATED" ? "Created milestone" : "Reached milestone"} <span className="font-medium text-gray-900">{activity.eventTitle}</span></span> };
   }
   if (activity.type === "PROJECT_CREATED") {
     return { icon: <Sparkles className="w-3.5 h-3.5 text-yellow-500" />, text: <span>Created project <span className="font-medium text-gray-900">{activity.projectName}</span></span> };
+  }
+  if (activity.type === "TASK_PROGRESS_UPDATE") {
+    return {
+      icon: <Edit3 className="w-3.5 h-3.5 text-teal-500" />,
+      text: (
+        <span className="flex flex-col gap-1.5 mt-0.5">
+          <span>📝 <span className="font-medium text-gray-900">{activity.assignedTo || "Someone"}</span> updated <span className="font-medium text-gray-900">{activity.taskTitle}</span></span>
+          {activity.updatePreview && (
+            <span className="text-gray-600 italic bg-gray-50 px-2 py-1.5 rounded-md border border-gray-100/80 text-xs shadow-sm">"{activity.updatePreview}"</span>
+          )}
+        </span>
+      )
+    };
   }
   
   // Fallback

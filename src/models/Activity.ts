@@ -11,9 +11,10 @@ const ActivitySchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["TASK_CREATED", "TASK_COMPLETED", "TASK_ASSIGNED", "STATUS_CHANGED", "EVENT_CREATED", "MILESTONE_CREATED", "MILESTONE_REACHED", "PROJECT_CREATED"],
+        enum: ["TASK_CREATED", "TASK_COMPLETED", "TASK_ASSIGNED", "STATUS_CHANGED", "EVENT_CREATED", "MILESTONE_CREATED", "MILESTONE_REACHED", "PROJECT_CREATED", "TASK_PROGRESS_UPDATE", "TASK_PROGRESS_STALE"],
     },
     taskTitle: String,
+    updatePreview: String,
     eventTitle: String,
     projectName: String,
     previousStatus: String,

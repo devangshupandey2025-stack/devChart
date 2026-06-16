@@ -122,8 +122,25 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         </div>
 
       <div {...attributes} {...listeners} className="mb-3">
-        <h3 className="font-semibold text-gray-900 leading-tight mb-1">{task.title}</h3>
-        {task.description && (
+        <h3 className="font-semibold text-gray-900 leading-tight mb-2">{task.title}</h3>
+        
+        {/* Progress Bar */}
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Progress</span>
+            <span className="text-[10px] font-bold text-teal-600">{task.currentProgress || 0}%</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+            <div className="bg-teal-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${task.currentProgress || 0}%` }}></div>
+          </div>
+        </div>
+
+        {task.latestUpdatePreview ? (
+          <div className="bg-amber-50/50 rounded-lg p-2.5 text-xs text-gray-700 border border-amber-100/50 mb-2">
+            <div className="font-semibold text-amber-700 text-[10px] mb-0.5 tracking-wider">LATEST UPDATE</div>
+            <div className="italic line-clamp-2">"{task.latestUpdatePreview}"</div>
+          </div>
+        ) : task.description && (
           <p className="text-sm text-gray-500 line-clamp-2">{task.description}</p>
         )}
       </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import TemplateSelector from "@/components/projects/TemplateSelector";
 import TemplatePreview from "@/components/projects/TemplatePreview";
+import Navbar from "@/components/Navbar";
 import { PROJECT_TEMPLATES } from "@/lib/templates";
 
 const CreateProject = () => {
@@ -40,34 +41,7 @@ const CreateProject = () => {
 
   return (
     <div className="grain-bg font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary/20">
-      {/* Upgraded Navigation */}
-      <header className="bg-white/60 backdrop-blur-xl border-b border-black/[0.04] sticky top-0 z-50">
-        <div className="flex justify-between items-center w-full px-margin h-20 max-w-max_width mx-auto">
-          <div className="flex items-center gap-xl">
-            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-all duration-500 group-hover:rotate-[-8deg]">
-                <span className="material-symbols-outlined text-xl">stacked_bar_chart</span>
-              </div>
-              <span className="serif-heading text-2xl text-on-surface tracking-tight group-hover:text-primary transition-colors">devChart</span>
-            </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <a className="text-on-surface-variant/80 font-label-md hover:text-primary transition-all tracking-wide uppercase relative" href="#">Analytics</a>
-              <a className="text-on-surface-variant/80 font-label-md hover:text-primary transition-all tracking-wide uppercase relative" href="#">Operations</a>
-              <a className="text-on-surface-variant/80 font-label-md hover:text-primary transition-all tracking-wide uppercase relative" href="#">Planning</a>
-            </nav>
-          </div>
-          <div className="flex items-center gap-6">
-            <a className="text-primary font-bold font-label-md px-5 py-2.5 bg-primary/5 hover:bg-primary/10 rounded-full transition-all border border-primary/10 active-nav-pill" href="#">New Project</a>
-            <div className="h-6 w-[1px] bg-black/[0.08]"></div>
-            <button className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden ring-1 ring-black/5 group-hover:scale-105 transition-transform">
-                <img alt="User" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANRG8lkaKGWjep1FLLzFg5nK_aAl6dBM_C9LxK9uXHXTIKIlQ-o9tpKyzf-PYefK-0JqJLPd-hk-6iXpDRFzwo_VLDEt5duKxenVzA-0sqjFbSQP0op6O1210eTQZnV9xGg90VgYg3xoAmEfnYqwGYkmwAMLhAsSOWy559SkeCP01AyABLH0tOuGMBERiA6v10RRQF8_EmE3Aj-3at77jhQMPkiI24ivJgjSW2Mh1o7xYHKJ5DPvKShKnhU5OLkTtly6mUdaBlwg"/>
-              </div>
-              <span className="material-symbols-outlined text-on-surface-variant/60 group-hover:text-on-surface transition-colors">expand_more</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="flex-grow max-w-max_width mx-auto w-full px-margin py-xl">
         <div className="mb-xl max-w-3xl">

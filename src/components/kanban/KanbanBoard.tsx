@@ -20,6 +20,7 @@ import {
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
 import KanbanColumn from "./KanbanColumn";
 import TaskCard from "./TaskCard";
+import TaskProgressJournal from "../tasks/TaskProgressJournal";
 
 interface KanbanBoardProps {
   initialTasks: TaskType[];
@@ -76,12 +77,26 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
   const [tasksSnapshot, setTasksSnapshot] = useState<TaskType[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
+  const [activeTab, setActiveTab] = useState<'details' | 'journal'>('details');
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+    setTasksSnapshot(initialTasks);
+    
+    // Also keep the currently editing task in sync with the server data
+    if (editingTask) {
+      const updatedEditingTask = initialTasks.find(t => t._id === editingTask._id);
+      if (updatedEditingTask) {
+        setEditingTask(updatedEditingTask);
+      }
+    }
+  }, [initialTasks]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -324,77 +339,104 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
 
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Edit Task</h2>
-              <button onClick={() => setEditingTask(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
+          <div className="bg-white rounded-2xl shadow-xl w-[90vw] max-w-[600px] overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 pb-0">
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-bold text-gray-900 truncate pr-4">{editingTask.title}</h2>
+                  <button onClick={() => { setEditingTask(null); setActiveTab('details'); }} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="flex gap-4 border-b border-gray-200 overflow-x-auto whitespace-nowrap no-scrollbar">
+                  <button
+                    onClick={() => setActiveTab('details')}
+                    className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'details' ? 'text-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Details
+                    {activeTab === 'details' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 rounded-t-full"></div>}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('journal')}
+                    className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'journal' ? 'text-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Progress Journal
+                    {activeTab === 'journal' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 rounded-t-full"></div>}
+                  </button>
+                </div>
+              </div>
             </div>
-            <form onSubmit={handleEditTaskSubmit} className="p-5 overflow-y-auto flex-1 flex flex-col gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
-                <input
-                  name="title"
-                  type="text"
-                  defaultValue={editingTask.title}
-                  required
-                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
-                <textarea
-                  name="description"
-                  defaultValue={editingTask.description}
-                  rows={3}
-                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Priority</label>
-                  <select
-                    name="priority"
-                    defaultValue={editingTask.priority}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            
+            <div className="p-5 overflow-y-auto flex-1">
+              {activeTab === 'details' ? (
+                <form onSubmit={handleEditTaskSubmit} className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+                    <input
+                      name="title"
+                      type="text"
+                      defaultValue={editingTask.title}
+                      required
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                    <textarea
+                      name="description"
+                      defaultValue={editingTask.description}
+                      rows={3}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Priority</label>
+                      <select
+                        name="priority"
+                        defaultValue={editingTask.priority}
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Assignee</label>
+                      <select
+                        name="assignedTo"
+                        defaultValue={editingTask.assignedTo || ""}
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                      >
+                        <option value="">Unassigned</option>
+                        {TEAM_MEMBERS.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Due Date</label>
+                    <input
+                      name="dueDate"
+                      type="date"
+                      min={todayStr}
+                      defaultValue={editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : ""}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 mt-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors"
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Assignee</label>
-                  <select
-                    name="assignedTo"
-                    defaultValue={editingTask.assignedTo || ""}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                  >
-                    <option value="">Unassigned</option>
-                    {TEAM_MEMBERS.map((m) => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Due Date</label>
-                <input
-                  name="dueDate"
-                  type="date"
-                  min={todayStr}
-                  defaultValue={editingTask.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : ""}
-                  className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-3 mt-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors"
-              >
-                Save Changes
-              </button>
-            </form>
+                    Save Changes
+                  </button>
+                </form>
+              ) : (
+                <TaskProgressJournal task={editingTask} onUpdateAdded={() => { router.refresh(); }} />
+              )}
+            </div>
           </div>
         </div>
       )}
