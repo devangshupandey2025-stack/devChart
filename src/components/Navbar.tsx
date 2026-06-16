@@ -58,7 +58,7 @@ export default function Navbar() {
           />
           
           {/* Right Sliding Drawer */}
-          <div className="fixed top-0 right-0 h-full w-[280px] bg-white z-50 p-6 flex flex-col justify-between shadow-2xl md:hidden animate-slide-in-right">
+          <div className="fixed inset-y-0 right-0 w-[280px] bg-white z-50 p-6 flex flex-col justify-between shadow-2xl md:hidden animate-slide-in-right">
             <div className="flex flex-col gap-6">
               {/* Header inside drawer */}
               <div className="flex justify-between items-center border-b border-black/[0.04] pb-4">
