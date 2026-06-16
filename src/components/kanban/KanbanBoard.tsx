@@ -78,8 +78,38 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'journal'>('details');
+  const [activeColumnTab, setActiveColumnTab] = useState<TaskStatus>("TODO");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  // Mobile Swipe Handlers for Kanban Columns
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      if (activeColumnTab === "TODO") setActiveColumnTab("IN_PROGRESS");
+      else if (activeColumnTab === "IN_PROGRESS") setActiveColumnTab("DONE");
+    } else if (isRightSwipe) {
+      if (activeColumnTab === "DONE") setActiveColumnTab("IN_PROGRESS");
+      else if (activeColumnTab === "IN_PROGRESS") setActiveColumnTab("TODO");
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -319,17 +349,49 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
           </div>
         </div>
 
-        {/* Board Columns */}
-        <div className="flex gap-6 overflow-x-auto pb-4 items-start w-full flex-1">
+        {/* Mobile Tab Selector for Kanban Columns */}
+        <div className="flex md:hidden gap-2 p-1.5 bg-gray-100 rounded-xl">
           {COLUMNS.map((col) => (
-            <KanbanColumn
+            <button
               key={col.id}
-              id={col.id}
-              title={col.title}
-              tasks={filteredTasks.filter((task) => task.status === col.id)}
-              onEdit={setEditingTask}
-            />
+              type="button"
+              onClick={() => setActiveColumnTab(col.id)}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center ${
+                activeColumnTab === col.id
+                  ? "bg-white text-teal-600 shadow-sm border border-gray-100"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {col.title} ({filteredTasks.filter((task) => task.status === col.id).length})
+            </button>
           ))}
+        </div>
+
+        {/* Board Columns */}
+        <div 
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex gap-6 overflow-x-auto pb-4 items-start w-full flex-1 no-scrollbar"
+        >
+          {COLUMNS.map((col) => {
+            const isHiddenOnMobile = activeColumnTab !== col.id;
+            return (
+              <div 
+                key={col.id} 
+                className={`w-full md:w-auto md:flex-1 min-w-[280px] md:min-w-0 ${
+                  isHiddenOnMobile ? "hidden md:flex" : "flex"
+                }`}
+              >
+                <KanbanColumn
+                  id={col.id}
+                  title={col.title}
+                  tasks={filteredTasks.filter((task) => task.status === col.id)}
+                  onEdit={setEditingTask}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -339,7 +401,7 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
 
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-[90vw] max-w-[600px] overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[600px] md:max-w-3xl h-[90vh] md:h-auto overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh]">
             <div className="flex justify-between items-center p-5 border-b border-gray-100 pb-0">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex justify-between items-center">

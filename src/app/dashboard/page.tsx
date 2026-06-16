@@ -43,7 +43,7 @@ export default async function DashboardPage() {
           <div className="space-y-6">
             
             {/* Top Row: Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
               <StatCard 
                 title="Total Tasks" 
                 value={data.stats.totalTasks} 
@@ -74,31 +74,31 @@ export default async function DashboardPage() {
             </div>
 
             {/* Second Row: Hall of Fame & Leaderboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
                 <HallOfFame contributor={data.hallOfFame} />
               </div>
-              <div className="lg:col-span-2">
+              <div className="md:col-span-2">
                 <Leaderboard leaderboard={data.leaderboard} />
               </div>
             </div>
 
             {/* Third Row: Chart & Deadlines */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
                 <h3 className="text-lg font-bold text-gray-800 mb-6">Task Distribution</h3>
                 <div className="flex-1 min-h-[300px]">
                   <StatusChart data={data.chartData} />
                 </div>
               </div>
-              <div className="lg:col-span-1">
+              <div className="md:col-span-1">
                 <UpcomingTimeline items={data.upcomingTimeline} />
               </div>
             </div>
 
             {/* Fourth Row: Automation Center */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 gap-6">
+              <div>
                 <AutomationCenter 
                   staleTasks={data.automation?.staleTasks || []}
                   riskTasks={data.automation?.riskTasks || []}
@@ -108,17 +108,17 @@ export default async function DashboardPage() {
             </div>
 
             {/* Fifth Row: Active & Stale Tasks */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <MostActiveTasks tasks={data.mostActiveTasks || []} />
               <TasksNeedingAttention tasks={data.tasksNeedingAttention || []} />
             </div>
 
             {/* Bottom Row: Activity Feed & Today's Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2">
                 <ActivityFeed activities={data.activities} />
               </div>
-              <div className="lg:col-span-1">
+              <div className="md:col-span-1">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full max-h-[500px]">
                   <h3 className="text-lg font-bold text-gray-800 mb-6">Today's Activity</h3>
                   <div className="flex-1 flex flex-col justify-center">

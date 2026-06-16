@@ -88,17 +88,17 @@ export default function ProjectTimeline({ activities }: ProjectTimelineProps) {
             <p className="text-sm text-gray-500">No activity found.</p>
           </div>
         ) : (
-          <div className="relative border-l-2 border-gray-100 ml-3 space-y-6">
+          <div className="relative border-l-0 md:border-l-2 border-gray-100 ml-0 md:ml-3 space-y-3 md:space-y-6 flex flex-col">
             {filteredActivities.map((activity) => {
               const content = getActivityContent(activity);
               return (
-                <div key={activity._id} className="relative pl-6">
+                <div key={activity._id} className="relative pl-0 md:pl-6 bg-gray-50/50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-gray-100 md:border-none flex gap-3 md:block">
                   {/* Timeline Icon */}
-                  <div className="absolute w-6 h-6 bg-white rounded-full -left-[13px] -top-1 ring-4 ring-white flex items-center justify-center text-sm shadow-sm border border-gray-100">
+                  <div className="flex-shrink-0 w-6 h-6 bg-white rounded-full md:absolute md:-left-[13px] md:-top-1 md:ring-4 md:ring-white flex items-center justify-center text-sm shadow-sm border border-gray-100">
                     {content.icon}
                   </div>
                   
-                  <div className="flex flex-col">
+                  <div className="flex-1 flex flex-col">
                     <p className="text-sm text-gray-700 leading-tight">
                       {content.text}
                     </p>

@@ -1,13 +1,16 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProjectType } from "@/types";
 import { TEAM_MEMBERS } from "@/lib/constants";
 
-const CreateTask = () => {
+function CreateTaskForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedProjectId = searchParams ? searchParams.get("projectId") : null;
+
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,7 +31,10 @@ const CreateTask = () => {
         const data = await res.json();
         const projectsArray = Array.isArray(data) ? data : [];
         setProjects(projectsArray);
-        if (projectsArray.length > 0) {
+        
+        if (preselectedProjectId && projectsArray.some(p => p._id === preselectedProjectId)) {
+          setProjectId(preselectedProjectId);
+        } else if (projectsArray.length > 0) {
           setProjectId(projectsArray[0]._id);
         }
       } catch (error) {
@@ -38,7 +44,7 @@ const CreateTask = () => {
       }
     }
     fetchProjects();
-  }, []);
+  }, [preselectedProjectId]);
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -205,6 +211,16 @@ const CreateTask = () => {
       </div>
     </div>
   );
-};
+}
 
-export default CreateTask;
+export default function CreateTask() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-orange-100/50">
+        <p className="text-gray-500 font-semibold">Loading form...</p>
+      </div>
+    }>
+      <CreateTaskForm />
+    </Suspense>
+  );
+}

@@ -2,9 +2,9 @@ import Navbar from "@/components/Navbar";
 
 export default function KanbanLoading() {
   return (
-    <div className="flex flex-col h-screen bg-gray-50/30">
+    <div className="flex flex-col min-h-screen md:h-screen bg-gray-50/30">
       <Navbar />
-      <div className="p-8 flex flex-col h-full">
+      <div className="p-8 flex flex-col min-h-0 flex-1">
         {/* Header Skeleton */}
         <div className="mb-8">
           <div className="h-8 w-64 bg-gray-200 rounded-md animate-pulse mb-3" />

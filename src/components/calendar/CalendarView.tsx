@@ -23,6 +23,15 @@ export default function CalendarView() {
   const [eventsData, setEventsData] = useState<NormalizedEvent[]>([]);
   const [projectsData, setProjectsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-w: 768px)");
+    setIsMobile(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
 
   // Modals state
   const [selectedEvent, setSelectedEvent] = useState<NormalizedEvent | null>(null);
@@ -244,14 +253,19 @@ export default function CalendarView() {
 
         <div className="flex-1 calendar-container">
           <FullCalendar
+            key={isMobile ? 'mobile' : 'desktop'}
             plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
+            initialView={isMobile ? "dayGridWeek" : "dayGridMonth"}
             events={calendarEvents}
             eventClick={(info) => {
               setSelectedEvent(info.event.extendedProps as NormalizedEvent);
             }}
             height="100%"
-            headerToolbar={{
+            headerToolbar={isMobile ? {
+              left: 'prev,next',
+              center: 'title',
+              right: 'today'
+            } : {
               left: 'prev,next today',
               center: 'title',
               right: 'dayGridMonth'
@@ -465,6 +479,33 @@ export default function CalendarView() {
           font-size: 1.25rem !important;
           font-weight: 800 !important;
           color: #111827;
+        }
+        @media (max-w: 768px) {
+          .calendar-container .fc-toolbar-title {
+            font-size: 0.95rem !important;
+          }
+          .calendar-container .fc-header-toolbar {
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px !important;
+          }
+          .calendar-container .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+          }
+          .calendar-container .fc-event {
+            font-size: 9px !important;
+            padding: 1px !important;
+          }
+          .calendar-container .fc-daygrid-day-number {
+            font-size: 11px !important;
+            padding: 4px !important;
+          }
+          .calendar-container .fc-theme-standard th {
+            padding: 4px 0 !important;
+            font-size: 10px !important;
+          }
         }
       `}} />
     </div>

@@ -99,9 +99,9 @@ export default async function ProjectPage({
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50/30">
+    <div className="flex flex-col min-h-screen md:h-screen bg-gray-50/30">
       <Navbar />
-      <div className="flex-1 flex flex-col p-8 overflow-hidden">
+      <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto md:overflow-hidden">
         <div className="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
@@ -129,15 +129,15 @@ export default async function ProjectPage({
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden flex flex-col xl:flex-row gap-6">
-          <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col xl:flex-row gap-6 overflow-y-auto xl:overflow-hidden no-scrollbar">
+          <div className="flex-none xl:flex-1">
             <KanbanBoard initialTasks={tasks} projectId={projectId} />
           </div>
-          <div className="w-full xl:w-[380px] flex-shrink-0 flex flex-col gap-6 overflow-hidden">
-            <div className="flex-none max-h-[40%] overflow-hidden flex flex-col">
+          <div className="w-full xl:w-[380px] flex-shrink-0 flex flex-col gap-6">
+            <div className="flex-none max-h-[300px] xl:max-h-[40%] overflow-y-auto xl:overflow-hidden flex flex-col">
               <ProjectAgenda tasks={tasks} events={events} />
             </div>
-            <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-none xl:flex-1 min-h-[300px] flex flex-col">
               <ProjectTimeline activities={activities} />
             </div>
           </div>
