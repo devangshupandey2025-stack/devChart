@@ -1,5 +1,6 @@
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
+import Activity from "@/models/Activity";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -29,6 +30,14 @@ export async function POST(request: Request) {
         }
 
         const event = await Event.create(body);
+
+        await Activity.create({
+            projectId: event.projectId,
+            type: event.type === "MILESTONE" ? "MILESTONE_CREATED" : "EVENT_CREATED",
+            eventTitle: event.title,
+            action: `created ${event.type === "MILESTONE" ? "milestone" : "event"} "${event.title}"`
+        });
+
         return NextResponse.json(event, { status: 201 });
     } catch (error) {
         console.error("Error creating event:", error);

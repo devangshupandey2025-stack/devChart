@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { TaskType, TaskStatus } from "@/types";
 import { Search, Filter, X } from "lucide-react";
 import { TEAM_MEMBERS } from "@/lib/constants";
@@ -25,6 +26,45 @@ interface KanbanBoardProps {
   projectId: string;
 }
 
+const PRIORITY_WEIGHT: Record<string, number> = {
+  "Low": 1,
+  "Medium": 2,
+  "High": 3,
+};
+
+function canMoveTask(taskToMove: TaskType, targetStatus: TaskStatus, allTasks: TaskType[]) {
+  // Only apply this rule when moving from TODO to IN_PROGRESS
+  if (taskToMove.status !== "TODO" || targetStatus !== "IN_PROGRESS") {
+    return { allowed: true };
+  }
+
+  // If the task has no deadline, we don't restrict it based on deadlines
+  if (!taskToMove.dueDate) return { allowed: true };
+  
+  const moveDate = new Date(taskToMove.dueDate).getTime();
+  const movePriority = PRIORITY_WEIGHT[taskToMove.priority] || 1;
+
+  for (const t of allTasks) {
+    if (t._id === taskToMove._id) continue;
+    // Only check tasks that are still in TODO
+    if (t.status !== "TODO") continue; 
+    if (!t.dueDate) continue;
+
+    const tDate = new Date(t.dueDate).getTime();
+    if (tDate < moveDate) {
+      // Task 't' has an earlier deadline and is still in TODO.
+      const tPriority = PRIORITY_WEIGHT[t.priority] || 1;
+      
+      // The move is blocked unless the task being moved has a STRICTLY HIGHER priority
+      if (movePriority <= tPriority) {
+        return { allowed: false, blockingTask: t };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
 const COLUMNS: { id: TaskStatus; title: string }[] = [
   { id: "TODO", title: "To Do" },
   { id: "IN_PROGRESS", title: "In Progress" },
@@ -33,8 +73,15 @@ const COLUMNS: { id: TaskStatus; title: string }[] = [
 
 export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<TaskType[]>(initialTasks);
+  const [tasksSnapshot, setTasksSnapshot] = useState<TaskType[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -63,7 +110,8 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
   const onDragStart = (event: DragStartEvent) => {
     const { active } = event;
     if (active.data.current?.type === "Task") {
-      setActiveTask(active.data.current.task);
+      setActiveTask({ ...active.data.current.task }); // Clone to avoid mutation
+      setTasksSnapshot(tasks);
     }
   };
 
@@ -91,7 +139,10 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
         if (tasks[activeIndex].status !== tasks[overIndex].status) {
           // Task crossed columns during drag
           const updatedTasks = [...tasks];
-          updatedTasks[activeIndex].status = tasks[overIndex].status;
+          updatedTasks[activeIndex] = { 
+            ...updatedTasks[activeIndex], 
+            status: tasks[overIndex].status 
+          };
           return arrayMove(updatedTasks, activeIndex, overIndex);
         }
 
@@ -105,38 +156,53 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t._id === activeId);
         const updatedTasks = [...tasks];
-        updatedTasks[activeIndex].status = overId as TaskStatus;
+        updatedTasks[activeIndex] = {
+          ...updatedTasks[activeIndex],
+          status: overId as TaskStatus
+        };
         return arrayMove(updatedTasks, activeIndex, activeIndex);
       });
     }
   };
 
   const onDragEnd = async (event: DragEndEvent) => {
+    const originalTask = activeTask;
     setActiveTask(null);
+    
     const { active, over } = event;
     if (!over) return;
 
-    const activeId = active.id;
-    const overId = over.id;
-    const isActiveTask = active.data.current?.type === "Task";
+    if (!originalTask) return;
 
-    if (!isActiveTask) return;
+    const currentTaskInState = tasks.find((t) => t._id === active.id);
+    if (!currentTaskInState) return;
 
-    const currentTask = tasks.find((t) => t._id === activeId);
-    if (!currentTask) return;
+    // Check Business Rules
+    if (originalTask.status !== currentTaskInState.status) {
+      const validation = canMoveTask(originalTask, currentTaskInState.status, tasksSnapshot);
+      if (!validation.allowed && validation.blockingTask) {
+        alert(`BLOCKED: You must complete "${validation.blockingTask.title}" (Earlier Deadline) first, unless this task has a higher priority.`);
+        setTasks(tasksSnapshot); // Revert the UI drop
+        return;
+      }
+    }
 
     // Note: We already updated the state in onDragOver for a snappy UI.
     // Now we must persist the exact status to MongoDB.
     try {
-      const response = await fetch(`/api/tasks/${activeId}`, {
+      const response = await fetch(`/api/tasks/${active.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: currentTask.status }),
+        body: JSON.stringify({ status: currentTaskInState.status }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update task status");
       }
+      
+      // Refresh the page data so the ProjectTimeline and Status Banner update
+      router.refresh();
+      
     } catch (error) {
       console.error(error);
       // In a real app, we'd revert the state and show a toast here.
@@ -181,6 +247,8 @@ export default function KanbanBoard({ initialTasks, projectId }: KanbanBoardProp
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
+
+  if (!isMounted) return null;
 
   return (
     <DndContext

@@ -6,7 +6,7 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import UpcomingTimeline from "@/components/dashboard/UpcomingTimeline";
 import HallOfFame from "@/components/dashboard/HallOfFame";
 import Leaderboard from "@/components/dashboard/Leaderboard";
-import { CheckCircle2, ListTodo, Target, Activity } from "lucide-react";
+import { CheckCircle2, ListTodo, Target, Activity, Flag, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -87,9 +87,33 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            {/* Bottom Row: Activity Feed */}
-            <div className="w-full">
-              <ActivityFeed activities={data.activities} />
+            {/* Bottom Row: Activity Feed & Today's Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <ActivityFeed activities={data.activities} />
+              </div>
+              <div className="lg:col-span-1">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full max-h-[500px]">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6">Today's Activity</h3>
+                  <div className="flex-1 flex flex-col justify-center">
+                    <div className="text-4xl font-black text-teal-500 mb-2">{data.todayStats?.total || 0} <span className="text-lg text-gray-500 font-medium">Activities</span></div>
+                    <div className="space-y-4 mt-6">
+                      <div className="flex justify-between items-center text-sm pb-2 border-b border-gray-50">
+                        <span className="text-gray-500 flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500" /> Tasks Completed</span>
+                        <span className="font-semibold text-gray-900">{data.todayStats?.tasksCompleted || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm pb-2 border-b border-gray-50">
+                        <span className="text-gray-500 flex items-center gap-2"><Flag className="w-5 h-5 text-red-500" /> Milestones Created</span>
+                        <span className="font-semibold text-gray-900">{data.todayStats?.milestonesCreated || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm pb-2 border-b border-gray-50">
+                        <span className="text-gray-500 flex items-center gap-2"><Sparkles className="w-5 h-5 text-yellow-500" /> Projects Created</span>
+                        <span className="font-semibold text-gray-900">{data.todayStats?.projectsCreated || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>

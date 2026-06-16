@@ -1,21 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { Activity } from "../dashboard/ActivityFeed";
 import { Plus, CheckCircle2, User, Rocket, Calendar, Flag, Sparkles, Activity as ActivityIcon } from "lucide-react";
 
-export interface Activity {
-  _id: string;
-  type?: string;
-  taskTitle?: string;
-  eventTitle?: string;
-  projectName?: string;
-  previousStatus?: string;
-  newStatus?: string;
-  assignedTo?: string;
-  xpAwarded?: number;
-  action?: string;
-  createdAt: string;
-}
-
-interface ActivityFeedProps {
+interface ProjectTimelineProps {
   activities: Activity[];
 }
 
@@ -46,19 +36,44 @@ function getActivityContent(activity: Activity) {
   return { icon: <ActivityIcon className="w-3.5 h-3.5 text-gray-400" />, text: <span>Someone <span className="font-medium text-gray-900">{activity.action}</span></span> };
 }
 
-export default function ActivityFeed({ activities }: ActivityFeedProps) {
+export default function ProjectTimeline({ activities }: ProjectTimelineProps) {
+  const [filter, setFilter] = useState<"ALL" | "TASKS" | "EVENTS" | "MILESTONES">("ALL");
+
+  const filteredActivities = activities.filter(a => {
+    if (filter === "ALL") return true;
+    if (filter === "TASKS") return ["TASK_CREATED", "TASK_COMPLETED", "TASK_ASSIGNED", "STATUS_CHANGED"].includes(a.type || "");
+    if (filter === "EVENTS") return ["EVENT_CREATED"].includes(a.type || "");
+    if (filter === "MILESTONES") return ["MILESTONE_CREATED", "MILESTONE_REACHED"].includes(a.type || "");
+    return true;
+  });
+
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden flex flex-col max-h-[500px]">
-      <h3 className="text-lg font-bold text-gray-800 mb-6">Recent Activity</h3>
-      
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full max-h-[600px]">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-gray-800">Recent Activity</h3>
+        <div className="flex gap-2">
+          {["ALL", "TASKS", "EVENTS", "MILESTONES"].map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f as any)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                filter === f ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {f.charAt(0) + f.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="overflow-y-auto flex-1 pr-2">
-        {activities.length === 0 ? (
+        {filteredActivities.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-500">No recent activity.</p>
+            <p className="text-sm text-gray-500">No activity found.</p>
           </div>
         ) : (
           <div className="relative border-l-2 border-gray-100 ml-3 space-y-6">
-            {activities.map((activity) => {
+            {filteredActivities.map((activity) => {
               const content = getActivityContent(activity);
               return (
                 <div key={activity._id} className="relative pl-6">

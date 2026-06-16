@@ -11,6 +11,7 @@ type CalendarCategory = "MEETING" | "EVENT" | "MILESTONE" | "DEADLINE";
 interface NormalizedEvent {
   id: string;
   title: string;
+  projectName?: string;
   date: Date;
   category: CalendarCategory;
   description?: string;
@@ -47,8 +48,10 @@ export default function CalendarView() {
       const tasks = await tasksRes.json();
       const projects = await projectsRes.json();
       
+      const projectMap = new Map();
       if (Array.isArray(projects)) {
         setProjectsData(projects);
+        projects.forEach(p => projectMap.set(p._id, p.name));
       }
 
       const normalized: NormalizedEvent[] = [];
@@ -59,6 +62,7 @@ export default function CalendarView() {
           normalized.push({
             id: e._id,
             title: e.title,
+            projectName: e.projectId ? projectMap.get(e.projectId) : undefined,
             date: new Date(e.startDate),
             category: e.type as CalendarCategory,
             description: e.description,
@@ -75,6 +79,7 @@ export default function CalendarView() {
             normalized.push({
               id: t._id,
               title: t.title,
+              projectName: t.projectId ? projectMap.get(t.projectId) : undefined,
               date: dueDate,
               category: "DEADLINE",
               description: t.description,
@@ -171,7 +176,7 @@ export default function CalendarView() {
 
     return {
       id: e.id,
-      title: e.title,
+      title: e.projectName ? `${e.projectName}: ${e.title}` : e.title,
       date: e.date.toISOString().split("T")[0],
       backgroundColor: color,
       borderColor: color,
@@ -348,6 +353,7 @@ export default function CalendarView() {
                             <div className="mt-0.5">{getCategoryIcon(item)}</div>
                             <div className="flex-1 min-w-0">
                               <h4 className={`text-sm font-bold truncate ${item.isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                                {item.projectName && <span className="text-gray-400 font-medium mr-1">[{item.projectName}]</span>}
                                 {item.title}
                               </h4>
                               <p className="text-xs text-gray-500 mt-0.5">
@@ -382,7 +388,9 @@ export default function CalendarView() {
                   {getCategoryIcon(selectedEvent)}
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">{selectedEvent.category}</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                    {selectedEvent.category} {selectedEvent.projectName && `• ${selectedEvent.projectName}`}
+                  </div>
                   <h3 className="text-xl font-bold text-gray-900 leading-tight">{selectedEvent.title}</h3>
                 </div>
               </div>

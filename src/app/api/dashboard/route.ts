@@ -71,8 +71,19 @@ export async function GET() {
         // 4. Activity Feed
         const activities = await Activity.find()
             .sort({ createdAt: -1 })
-            .limit(5)
-            .populate('taskId', 'title'); // if we want to show task title, but we stored string in action anyway
+            .limit(5);
+            
+        // Today's Activity Stats
+        const startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        const todaysActivities = await Activity.find({ createdAt: { $gte: startOfToday } });
+        
+        const todayStats = {
+            total: todaysActivities.length,
+            tasksCompleted: todaysActivities.filter(a => a.type === "TASK_COMPLETED").length,
+            milestonesCreated: todaysActivities.filter(a => a.type === "MILESTONE_CREATED").length,
+            projectsCreated: todaysActivities.filter(a => a.type === "PROJECT_CREATED").length
+        };
 
         // 5. XP & Leaderboard calculation
         const memberStats: Record<string, { memberName: string, totalXP: number, completedTasks: number, highPriorityCompleted: number }> = {};
@@ -106,6 +117,7 @@ export async function GET() {
 
         return NextResponse.json({
             stats,
+            todayStats,
             chartData,
             upcomingTimeline,
             activities,

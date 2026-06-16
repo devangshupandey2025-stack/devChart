@@ -5,9 +5,23 @@ const ActivitySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task',
     },
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+    },
+    type: {
+        type: String,
+        enum: ["TASK_CREATED", "TASK_COMPLETED", "TASK_ASSIGNED", "STATUS_CHANGED", "EVENT_CREATED", "MILESTONE_CREATED", "MILESTONE_REACHED", "PROJECT_CREATED"],
+    },
+    taskTitle: String,
+    eventTitle: String,
+    projectName: String,
+    previousStatus: String,
+    newStatus: String,
+    assignedTo: String,
+    xpAwarded: Number,
     action: {
         type: String,
-        required: true,
     },
     createdAt: {
         type: Date,

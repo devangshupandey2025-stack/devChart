@@ -2,6 +2,7 @@ import connectDB from "@/lib/mongodb";
 import Project from "@/models/Project";
 import Task from "@/models/Tasks";
 import Event from "@/models/Event";
+import Activity from "@/models/Activity";
 import { NextResponse } from "next/server";
 import { PROJECT_TEMPLATES } from "@/lib/templates";
 
@@ -104,6 +105,13 @@ export async function POST(request: Request) {
         const project = await Project.create({
             ...projectData,
             templateId: templateId === "custom" ? undefined : templateId
+        });
+
+        await Activity.create({
+            projectId: project._id,
+            type: "PROJECT_CREATED",
+            projectName: project.name,
+            action: `created project "${project.name}"`
         });
 
         if (templateId && templateId !== "custom") {

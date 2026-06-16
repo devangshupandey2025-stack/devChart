@@ -40,21 +40,50 @@ export async function PATCH(
         }
 
         const updatedTask = await Task.findByIdAndUpdate(resolvedParams.id, body, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         });
 
         // Generate activity logs based on what changed
         if (body.status && body.status !== oldStatus) {
-            await Activity.create({
-                taskId: updatedTask._id,
-                action: `changed status from ${oldStatus} to ${body.status}`,
-            });
+            if (body.status === "DONE") {
+                let xpAwarded = 10;
+                if (updatedTask.priority === "Low") xpAwarded = 5;
+                else if (updatedTask.priority === "High") xpAwarded = 20;
+
+                if (updatedTask.dueDate && new Date() > new Date(updatedTask.dueDate)) {
+                    xpAwarded -= 5;
+                }
+
+                await Activity.create({
+                    taskId: updatedTask._id,
+                    projectId: updatedTask.projectId,
+                    type: "TASK_COMPLETED",
+                    taskTitle: updatedTask.title,
+                    assignedTo: updatedTask.assignedTo,
+                    xpAwarded,
+                    action: `completed task ${updatedTask.title}`,
+                });
+            } else {
+                await Activity.create({
+                    taskId: updatedTask._id,
+                    projectId: updatedTask.projectId,
+                    type: "STATUS_CHANGED",
+                    taskTitle: updatedTask.title,
+                    previousStatus: oldStatus,
+                    newStatus: body.status,
+                    action: `changed status from ${oldStatus} to ${body.status}`,
+                });
+            }
         }
 
         if (body.assignedTo && body.assignedTo !== oldAssignee) {
             await Activity.create({
                 taskId: updatedTask._id,
+                projectId: updatedTask.projectId,
+                type: "TASK_ASSIGNED",
+                taskTitle: updatedTask.title,
+                assignedTo: body.assignedTo,
                 action: `assigned task to ${body.assignedTo}`,
             });
         }

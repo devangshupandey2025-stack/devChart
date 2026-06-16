@@ -1,11 +1,159 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-fixed: #9ff2dd;
+  --color-surface-variant: #d7e6e0;
+  --color-primary: #005143;
+  --color-secondary-fixed: #dae2fc;
+  --color-outline-variant: #bec9c4;
+  --color-on-error: #ffffff;
+  --color-inverse-primary: #83d6c1;
+  --color-blueprint-orange: #f97316;
+  --color-surface: #eefdf6;
+  --color-surface-container: #e2f1eb;
+  --color-secondary-fixed-dim: #bec6e0;
+  --color-secondary: #565e74;
+  --color-surface-dim: #cfddd7;
+  --color-tertiary-fixed: #ebe1d8;
+  --color-tertiary: #4c463f;
+  --color-outline: #6e7975;
+  --color-blueprint-indigo: #6366f1;
+  --color-on-surface-variant: #2f3a36;
+  --color-on-surface: #0a1310;
+  --color-on-primary-fixed: #00201a;
+  --color-on-tertiary-fixed: #1f1b15;
+  --color-tertiary-fixed-dim: #cfc5bc;
+  --color-background: #eefdf6;
+  --color-on-tertiary-fixed-variant: #4c463f;
+  --color-error: #ba1a1a;
+  --color-on-error-container: #93000a;
+  --color-surface-tint: #006b5a;
+  --color-secondary-container: #d7dff9;
+  --color-on-secondary-fixed: #131b2e;
+  --color-surface-container-low: #e8f7f1;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #95e8d3;
+  --color-error-container: #ffdad6;
+  --color-on-tertiary: #ffffff;
+  --color-on-secondary-container: #5a6278;
+  --color-surface-container-high: #ddece5;
+  --color-surface-bright: #eefdf6;
+  --color-inverse-on-surface: #e5f4ee;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-primary-fixed-variant: #005143;
+  --color-tertiary-container: #645d56;
+  --color-on-tertiary-container: #e1d6ce;
+  --color-surface-container-highest: #d7e6e0;
+  --color-glass-bg: rgba(255, 255, 255, 0.8);
+  --color-blueprint-blue: #3b82f6;
+  --color-on-secondary-fixed-variant: #3e465b;
+  --color-on-secondary: #ffffff;
+  --color-primary-fixed-dim: #83d6c1;
+  --color-primary-container: #006b5a;
+  --color-on-background: #111e1a;
+  --color-inverse-surface: #26332f;
+
+  --spacing-lg: 48px;
+  --spacing-md: 24px;
+  --spacing-max_width: 1200px;
+  --spacing-margin: 32px;
+  --spacing-gutter: 32px;
+  --spacing-sm: 16px;
+  --spacing-xs: 8px;
+  --spacing-xl: 80px;
+  --spacing-base: 4px;
+
+  --font-label-md: "Inter", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-label-sm: "Inter", sans-serif;
+  --font-display-lg-mobile: "Playfair Display", serif;
+  --font-headline-md: "Playfair Display", serif;
+  --font-display-lg: "Playfair Display", serif;
+}
+
 @layer utilities {
   .text-outline-black {
     -webkit-text-stroke: 1px black;
   }
+  .font-label-md { font-size: 13px; line-height: 1; letter-spacing: 0.05em; font-weight: 600; }
+  .font-body-md { font-size: 14px; line-height: 1.5; font-weight: 450; }
+  .font-body-lg { font-size: 18px; line-height: 1.6; font-weight: 300; }
+  .font-label-sm { font-size: 11px; line-height: 1; letter-spacing: 0.12em; font-weight: 800; }
+  .font-display-lg-mobile { font-size: 32px; line-height: 1.2; font-weight: 700; }
+  .font-headline-md { font-size: 26px; line-height: 1.4; font-weight: 700; }
+  .font-display-lg { font-size: 52px; line-height: 1.15; font-weight: 700; }
+  
+  .text-label-md { font-size: 13px; line-height: 1; letter-spacing: 0.05em; font-weight: 600; }
+  .text-body-md { font-size: 14px; line-height: 1.5; font-weight: 450; }
+  .text-body-lg { font-size: 18px; line-height: 1.6; font-weight: 300; }
+  .text-label-sm { font-size: 11px; line-height: 1; letter-spacing: 0.12em; font-weight: 800; }
+  .text-display-lg-mobile { font-size: 32px; line-height: 1.2; font-weight: 700; }
+  .text-headline-md { font-size: 26px; line-height: 1.4; font-weight: 700; }
+  .text-display-lg { font-size: 52px; line-height: 1.15; font-weight: 700; }
 }
 
-body {
-  background-color: bisque;
-}
+@layer components {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .serif-heading {
+    font-family: 'Playfair Display', serif;
+  }
+  .premium-shadow {
+    box-shadow: 0 10px 40px -10px rgba(0, 107, 90, 0.1), 0 4px 12px -5px rgba(0, 0, 0, 0.05);
+  }
+  .premium-shadow-hover:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 107, 90, 0.2), 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+  }
+  .grain-bg {
+    background-color: #eefdf6;
+    background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+  .blueprint-tile {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .blueprint-tile:hover {
+    transform: translateY(-4px);
+  }
+  .selected-blueprint {
+    border-color: #006b5a !important;
+    box-shadow: 0 0 0 1px #006b5a, 0 20px 40px -10px rgba(0, 107, 90, 0.15);
+  }
+  .pulse-dot {
+    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.33); opacity: 0.8; }
+    80%, 100% { opacity: 0; transform: scale(1.8); }
+  }
+  .connector-line-v {
+    background: linear-gradient(to bottom, #bec9c4 50%, transparent 50%);
+    background-size: 1px 6px;
+    width: 1px;
+  }
+  .connector-line-h {
+    background: linear-gradient(to right, #bec9c4 50%, transparent 50%);
+    background-size: 6px 1px;
+    height: 1px;
+  }
+  .nav-link-active {
+    color: #005143;
+  }
+  .nav-link-active::after {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #006b5a;
+    border-radius: 50%;
+  }
+}

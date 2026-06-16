@@ -47,6 +47,9 @@ export async function POST(request: Request) {
         // Generate automatic activity log
         await Activity.create({
             taskId: task._id,
+            projectId: task.projectId,
+            type: "TASK_CREATED",
+            taskTitle: task.title,
             action: `created task "${task.title}"`,
         });
 
