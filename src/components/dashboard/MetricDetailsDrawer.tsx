@@ -89,7 +89,7 @@ export default function MetricDetailsDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[150] flex justify-end bg-black/20 backdrop-blur-sm" onClick={onClose}>
       <div 
         className="w-full md:w-[450px] bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 border-l border-gray-100"
         onClick={e => e.stopPropagation()}
