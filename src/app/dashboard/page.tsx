@@ -10,20 +10,18 @@ import MostActiveTasks from "@/components/dashboard/MostActiveTasks";
 import TasksNeedingAttention from "@/components/dashboard/TasksNeedingAttention";
 import AutomationCenter from "@/components/dashboard/AutomationCenter";
 import { CheckCircle2, ListTodo, Target, Activity, Flag, Sparkles, TrendingUp } from "lucide-react";
+import { fetchDashboardData } from "@/lib/dashboard";
 
 export const dynamic = "force-dynamic";
 
-async function getDashboardData() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/dashboard`, { cache: "no-store" });
-  if (!res.ok) {
-    return null;
-  }
-  return res.json();
-}
-
 export default async function DashboardPage() {
-  const data = await getDashboardData();
+  let data = null;
+  try {
+    data = await fetchDashboardData();
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50/50">

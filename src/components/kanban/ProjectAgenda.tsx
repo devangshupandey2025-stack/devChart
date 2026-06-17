@@ -124,7 +124,7 @@ export default function ProjectAgenda({ tasks, events }: ProjectAgendaProps) {
                           {item.title}
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          {item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          {item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </p>
                       </div>
                     </div>

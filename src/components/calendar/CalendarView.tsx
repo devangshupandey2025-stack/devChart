@@ -458,7 +458,7 @@ export default function CalendarView() {
                                 {item.title}
                               </h4>
                               <p className="text-xs text-gray-500 mt-0.5">
-                                {item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                {item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </p>
                             </div>
                           </div>
@@ -499,7 +499,7 @@ export default function CalendarView() {
               <div className="space-y-4 mb-8">
                 <div>
                   <p className="text-sm font-semibold text-gray-500 mb-1">Date</p>
-                  <p className="text-sm text-gray-900 font-medium">{selectedEvent.date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <p className="text-sm text-gray-900 font-medium">{selectedEvent.date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
                 {selectedEvent.description && (
                   <div>

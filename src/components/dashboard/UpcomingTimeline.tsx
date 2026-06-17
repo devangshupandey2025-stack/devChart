@@ -41,7 +41,7 @@ export default function UpcomingTimeline({ items }: { items: TimelineItem[] }) {
     } else if (d.getTime() === tomorrow.getTime()) {
       groupKey = "Tomorrow";
     } else {
-      groupKey = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      groupKey = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
     if (!grouped[groupKey]) grouped[groupKey] = [];

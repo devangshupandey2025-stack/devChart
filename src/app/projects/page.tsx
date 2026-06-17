@@ -2,20 +2,18 @@ import Navbar from "@/components/Navbar";
 import { CalendarClock, FolderKanban, Activity, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { PROJECT_TEMPLATES } from "@/lib/templates";
+import { fetchProjectsData } from "@/lib/projects";
 
 export const dynamic = "force-dynamic";
 
-async function getProjects() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/projects`, { cache: "no-store" });
-  if (!res.ok) {
-    return [];
-  }
-  return res.json();
-}
-
 export default async function ProjectsDashboard() {
-  const projects = await getProjects();
+  let projects = [];
+  try {
+    projects = await fetchProjectsData();
+  } catch (error) {
+    console.error("Failed to load projects:", error);
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50/50">
