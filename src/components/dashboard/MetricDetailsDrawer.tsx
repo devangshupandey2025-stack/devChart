@@ -302,6 +302,16 @@ export default function MetricDetailsDrawer({
           )}
         </div>
 
+        {/* Mobile Close Footer */}
+        <div className="md:hidden p-4 border-t border-gray-100 bg-white mt-auto flex-shrink-0">
+          <button 
+            onClick={onClose}
+            className="w-full py-3.5 bg-gray-100 text-gray-800 font-bold rounded-xl active:bg-gray-200 transition-colors shadow-sm"
+          >
+            Close
+          </button>
+        </div>
+
       </div>
       
       <style dangerouslySetInnerHTML={{__html: `
