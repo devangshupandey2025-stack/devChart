@@ -36,8 +36,13 @@ export default function StatCard({ title, value, icon, subtitle, trend, onClick,
       {subtitle && <p className="text-xs text-gray-400 mt-2">{subtitle}</p>}
       
       {onClick && (
-        <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">
-          Explore <ChevronRight className="w-3 h-3" />
+        <div className={`mt-auto pt-3 border-t mt-4 flex items-center justify-between text-xs font-semibold transition-colors ${
+          isWarning 
+            ? 'border-red-100/70 text-red-600 group-hover:text-red-700' 
+            : 'border-gray-100 text-indigo-600 group-hover:text-indigo-700'
+        }`}>
+          <span>Explore stats</span>
+          <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
         </div>
       )}
     </div>
