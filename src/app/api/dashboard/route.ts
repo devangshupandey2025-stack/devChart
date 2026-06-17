@@ -12,7 +12,7 @@ export async function GET() {
         await connectDB();
 
         // 1. Stats Aggregation
-        const tasks = await Task.find();
+        const tasks = await Task.find().populate('projectId', 'name').lean();
         
         const totalTasks = tasks.length;
         const completedTasks = tasks.filter(t => t.status === "DONE").length;
@@ -27,6 +27,32 @@ export async function GET() {
             pendingTasks,
             completionPercentage,
         };
+
+        const dashboardDetails = tasks.map((t: any) => {
+            let xp = 0;
+            if (t.status === "DONE") {
+                if (t.priority === "Low") xp = 5;
+                else if (t.priority === "Medium") xp = 10;
+                else if (t.priority === "High") xp = 20;
+
+                if (t.dueDate && t.completedAt && new Date(t.completedAt) > new Date(t.dueDate)) {
+                    xp -= 5;
+                }
+            }
+            return {
+                id: t._id.toString(),
+                title: t.title,
+                projectName: t.projectId ? t.projectId.name : 'Unknown Project',
+                projectId: t.projectId ? t.projectId._id?.toString() || t.projectId.toString() : null,
+                status: t.status,
+                priority: t.priority,
+                currentProgress: t.currentProgress || 0,
+                assignedTo: t.assignedTo,
+                dueDate: t.dueDate,
+                completedAt: t.completedAt,
+                xp
+            };
+        });
 
         // 2. Chart Data (Task Distribution by Status)
         const chartData = [
@@ -154,10 +180,40 @@ export async function GET() {
                 executionVelocityPercent = 100;
             }
 
+            const startOfThisWeek = new Date(sevenDaysAgo);
+            const startOfLastWeek = new Date(sevenDaysAgo);
+            startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+            const tasksThisWeek = tasks.filter((t: any) => t.status === "DONE" && t.completedAt && new Date(t.completedAt) >= startOfThisWeek).length;
+            const tasksLastWeek = tasks.filter((t: any) => t.status === "DONE" && t.completedAt && new Date(t.completedAt) >= startOfLastWeek && new Date(t.completedAt) < startOfThisWeek).length;
+
+            let completionTrend = 0;
+            if (tasksLastWeek > 0) {
+                completionTrend = Math.round(((tasksThisWeek - tasksLastWeek) / tasksLastWeek) * 100);
+            } else if (tasksThisWeek > 0) {
+                completionTrend = 100;
+            }
+
+            const recentCompletedTasks = tasks
+                .filter((t: any) => t.status === "DONE" && t.completedAt)
+                .sort((a: any, b: any) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+                .slice(0, 5)
+                .map((t: any) => ({
+                    id: t._id.toString(),
+                    title: t.title,
+                    completedAt: t.completedAt,
+                    projectName: t.projectId ? t.projectId.name : 'Unknown Project',
+                    projectId: t.projectId ? t.projectId._id?.toString() || t.projectId.toString() : null
+                }));
+
             executionVelocity = {
                 updatesToday: updatesTodayCount,
-                percentChange: executionVelocityPercent
-            };
+                percentChange: executionVelocityPercent,
+                tasksThisWeek,
+                tasksLastWeek,
+                completionTrend,
+                recentCompletedTasks
+            } as any;
         }
 
         // --- Automation Engine Data ---
@@ -228,6 +284,7 @@ export async function GET() {
             mostActiveTasks,
             tasksNeedingAttention,
             executionVelocity,
+            dashboardDetails,
             automation: {
                 staleTasks,
                 riskTasks,

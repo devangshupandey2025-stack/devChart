@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import connectDB from "@/lib/mongodb";
-import StatCard from "@/components/dashboard/StatCard";
+import InteractiveStatCards from "@/components/dashboard/InteractiveStatCards";
 import StatusChart from "@/components/dashboard/StatusChart";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import UpcomingTimeline from "@/components/dashboard/UpcomingTimeline";
@@ -42,34 +42,13 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-6">
             
-            {/* Top Row: Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-              <StatCard 
-                title="Total Tasks" 
-                value={data.stats.totalTasks} 
-                icon={<Target className="w-5 h-5" />} 
-              />
-              <StatCard 
-                title="Completed" 
-                value={data.stats.completedTasks} 
-                icon={<CheckCircle2 className="w-5 h-5" />} 
-                trend={`${data.stats.completionPercentage}%`}
-              />
-              <StatCard 
-                title="In Progress" 
-                value={data.stats.inProgressTasks} 
-                icon={<Activity className="w-5 h-5" />} 
-              />
-              <StatCard 
-                title="Pending" 
-                value={data.stats.pendingTasks} 
-                icon={<ListTodo className="w-5 h-5" />} 
-              />
-              <StatCard 
-                title="Velocity" 
-                value={data.executionVelocity?.updatesToday || 0} 
-                icon={<TrendingUp className="w-5 h-5" />} 
-                trend={`${data.executionVelocity?.percentChange > 0 ? '+' : ''}${data.executionVelocity?.percentChange || 0}%`}
+            {/* Top Row: Interactive Stat Cards */}
+            <div className="mb-6">
+              <InteractiveStatCards 
+                stats={data.stats}
+                executionVelocity={data.executionVelocity}
+                dashboardDetails={data.dashboardDetails}
+                riskTasks={data.automation?.riskTasks || []}
               />
             </div>
 
